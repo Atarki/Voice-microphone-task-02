@@ -18,6 +18,7 @@ public class CLIENT {
     static volatile int sendersCreated = 0;
     static MicrophoneReader micReader;
     static Sender sender;
+    static ReceiverPlayer receiverPlayer;
 
     public static void main(String[] args) throws IOException {
         try {
@@ -25,23 +26,29 @@ public class CLIENT {
             micReader.start();
 
 //            Socket s2 = new Socket("192.168.0.2", 8081);
-            Socket s2 = new Socket("92.249.120.254", 8081);
+//            Socket s2 = new Socket("92.249.120.254", 8081);//DNS
+            Socket s2 = new Socket("92.249.110.30", 8081);
 //            Socket s2 = new Socket("localhost", 8081);
 
-//            ServerSocket serverSocket = new ServerSocket(8081);
-            System.out.println(s2.isConnected());
 
-            ReceiverPlayer receiverPlayer = new ReceiverPlayer(s2);
-            receiverPlayer.start();
+            do {
+                System.out.println(s2.isConnected());
+                System.out.println(s2.getInetAddress());
+                System.out.println(s2.getLocalSocketAddress());
+                System.out.println(s2.getSendBufferSize());
+                System.out.println(s2.getOutputStream());
+                System.out.println(s2.getInputStream());
+                System.out.println("---------------------");
 
 
-            while (true) {
-//                Socket clientSocket = serverSocket.accept();
-
-//                sender = new Sender(clientSocket);
                 sender = new Sender(s2);
                 sender.start();
-            }
+
+                receiverPlayer = new ReceiverPlayer(s2);
+                receiverPlayer.start();
+            } while (!s2.isConnected());
+
+
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -126,6 +133,7 @@ public class CLIENT {
             }
         }
     }
+
     public static class ReceiverPlayer extends Thread {
 
         public ReceiverPlayer(Socket s) {

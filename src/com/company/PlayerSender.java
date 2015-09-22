@@ -19,35 +19,38 @@ public class PlayerSender {
     static volatile int sendersCreated = 0;
     static MicrophoneReader micReader;
     static Sender sender;
+    static ReceiverPlayer receiverPlayer;
 
     public static void main(String[] args) throws IOException {
         try {
-//            micReader = new MicrophoneReader();
-//            micReader.start();
+            micReader = new MicrophoneReader();
+            micReader.start();
 
 //            Socket s2 = new Socket("192.168.0.2", 8081);
             ServerSocket serverSocket = new ServerSocket(8081);
             System.out.println("Server is running");
 
 
-            while (true) {
+            do {
                 Socket clientSocket = serverSocket.accept();
+                socket = clientSocket;
+
                 System.out.println(clientSocket.isConnected());
                 System.out.println(clientSocket.getLocalAddress());
                 System.out.println(clientSocket.getSendBufferSize());
 
-                socket = clientSocket;
-                sender = new Sender(clientSocket);
+                sender = new Sender(socket);
                 sender.start();
-                ReceiverPlayer receiverPlayer = new ReceiverPlayer();
+
+                receiverPlayer = new ReceiverPlayer();
                 receiverPlayer.start();
-            }
+            } while (serverSocket.isClosed());
 
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            micReader.setRunning();
             sender.setRunning();
+            micReader.setRunning();
         }
     }
 
